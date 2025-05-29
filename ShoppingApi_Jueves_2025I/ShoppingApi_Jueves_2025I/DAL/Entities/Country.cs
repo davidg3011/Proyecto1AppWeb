@@ -9,5 +9,7 @@ namespace ShoppingApi_Jueves_2025I.DAL.Entities
         [Display(Name = "Pais")] //Para identificar el nombre mas facil
         public string Name { get; set; }
 
+        [Display(Name = "Estado/Departamento")]
+        public ICollection<State>? States { get; set; }
     }
 }
