@@ -13,8 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DataBaseContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ICountryService, CountryService>();//Contenedor de dependencias
-
-
+builder.Services.AddTransient<SeederDB>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -22,17 +21,29 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+SeederData();
+void SeederData()
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    IServiceScopeFactory? scopeFactory = app.Services.GetService<IServiceScopeFactory>();
+
+    using (IServiceScope? scope = scopeFactory.CreateScope())
+    {
+        SeederDB? service = scope.ServiceProvider.GetService<SeederDB>();
+        service.SeederAsync().Wait();
+    }
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
